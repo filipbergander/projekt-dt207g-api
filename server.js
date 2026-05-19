@@ -10,12 +10,11 @@ require('dotenv').config();
 
 // För att kunna skapa app med express
 const app = express();
+// Middlewares
+app.use(bodyParser.json());
+app.use(cors());
 app.use(express.json());
 
-// Välkomstmeddelande för webbtjänsten
-app.get('/', async(req, res) => {
-    res.json("Välkommen till webbtjänsten!")
-});
 
 // Ansluter mot mongoDB
 mongoose.set("strictQuery", false);
@@ -28,6 +27,11 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 // Routes
 const authRoutes = require("./routes/authRoutes.js");
 app.use("/", authRoutes);
+
+// Välkomstmeddelande för webbtjänsten
+app.get('/', async(req, res) => {
+    res.json("Välkommen till webbtjänsten!")
+});
 
 // Startar servern
 app.listen(port, () => {

@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
     },
 
     // Timestamp när kontot blev skapat
-    account_created: {
+    createdAt: {
         type: Date,
         default: Date.now
     }
@@ -67,7 +67,37 @@ userSchema.statics.register = async function(username, email, password, role) {
     }
 };
 
-// Lägger till den tillagda användaren inom collection user i MongoDB
+// Jämför angivet lösenord med det som finns lagrat för användaren
+userSchema.methods.comparePassword = async function(password) {
+    try {
+        return await bcrypt.compare(password, this.password); // Jämför
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Loggar in en användare
+userSchema.statics.login = async function(email, password) {
+        try {
+            // Försöker hitta en användare genom email
+            const user = await this.findOne({ email });
+
+            if (!user) {
+                throw new Error("Felaktigt lösenord eller mejl!");
+            }
+
+            // Om mailen hittades -> försöker med lösenord
+            if (!isPasswordMatch) {
+                throw new Error("Felaktigt lösenord eller mejl!")
+            }
+
+            // Om mejl och lösenord stämde
+            return user;
+        } catch (error) {
+            throw error;
+        }
+    }
+    // Lägger till den tillagda användaren inom collection user i MongoDB
 const User = mongoose.model("user", userSchema);
-// Export för att använda inom resten av filerna
+// Export för att använda inom resten av 
 module.exports = User;

@@ -56,5 +56,62 @@ router.post("/register", async(req, res) => {
         return;
     }
 });
+
+// Logga in en befintlig användare
+router.post("/login", async(req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Validera input
+        if (!email || !password) {
+            return res.status(400).json({ error: "Felaktig information angivet. Ange korrekt mejl och lösenord!" });
+        }
+
+        // Finns användaren redan?
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ error: "Felaktig mejl eller lösenord!" })
+        }
+
+        // Stämmer lösenorden med varandra? Angivet/lagrat
+        const isPasswordMatch = await user.comparePassword(password);
+        if (!isPasswordMatch) {
+            return res.status(401).json({ error: "Felaktig mejl eller lösenord!" })
+        }
+
+        // Skapa jsonwebtoken
+        else {
+            const payload = {
+                username: user.username,
+                role: user.role
+            };
+
+            const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+            res.status(200).json({
+                response: {
+                    message: "Användare inloggad",
+                    user: {
+                        username: user.username,
+                        email: user.email,
+                        created: {
+                            raw: user.createdAt,
+                            formatted: user.createdAt.toLocaleString("sv-SE", {
+                                dateStyle: "long",
+                                timeStyle: "short"
+                            })
+                        }
+                    },
+                    token
+                }
+            });
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: "Fel på server vid inloggning" });
+        console.error(error);
+    }
+    console.log("Inloggning kallad...");
+});
+
 // Exporterar router för att använda i server.js
 module.exports = router;
