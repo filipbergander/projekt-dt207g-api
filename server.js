@@ -8,12 +8,16 @@ const port = process.env.PORT || 3000; // Portanslutning
 // För att kunna använda miljövariabler
 require('dotenv').config();
 
+// För att kunna skapa app med express
 const app = express();
 
+// Välkomstmeddelande för webbtjänsten
 app.get('/', async(req, res) => {
     res.json("Välkommen till webbtjänsten!")
 });
 
+// Startar servern
 app.listen(port, () => {
-    console.log("Servern startade på port: ", port);
+    // console.log("Servern startade på port: ", port);
+    console.log("Servern startade på http://localhost:" + port);
 });
