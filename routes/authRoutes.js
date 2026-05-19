@@ -27,7 +27,8 @@ router.post("/register", async(req, res) => {
         }
         // Om man lyckas med registreringen
         const user = new User({ username, email, password, role });
-        await user.save();
+        await user.save(); // Sparar användaren genom user-modellen
+        // Success-meddelande
         res.status(201).json({
             message: "Ny användare har skapats!",
             user: {
@@ -36,9 +37,24 @@ router.post("/register", async(req, res) => {
                 role
             }
         });
+        // Felmeddelanden
     } catch (error) {
+        /* Om man försöker spara en användare som redan finns,
+         eftersom användarnamn och mejl är unika */
+        if (error.code === 11000) {
+            // Användarnamnet används redan?
+            if (error.keyPattern.username) {
+                return res.status(400).json({ error: "Användarnamnet används redan!" })
+            }
+            // Emailen används redan?
+            if (error.keyPattern.email) {
+                return res.status(400).json({ error: "Mejlen används redan!" })
+            }
+        }
         res.status(500).json({ error: "Fel på server när en användare skulle registreras..." });
+        console.error(error);
+        return;
     }
 });
-
+// Exporterar router för att använda i server.js
 module.exports = router;
