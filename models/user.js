@@ -41,3 +41,33 @@ const userSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
+// Lösenordet hashas innan det sparas genom pre
+userSchema.pre("save", async function() {
+    // Provar hasha lösenord
+    try {
+        if (this.isNew || this.isModified("password")) {
+            const hashedPassword = await bcrypt.hash(this.password, 10); // 10 salter för det hashade lösenordet
+            this.password = hashedPassword;
+        }
+        // Felmeddelande om något gick fel
+    } catch (error) {
+        throw Error;
+    }
+});
+
+// Registrerar en ny användare
+userSchema.statics.register = async function(username, email, password, role) {
+    try {
+        const newUser = new this({ username, email, password, role }); // Ny användare
+        await newUser.save();
+        return newUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Lägger till den tillagda användaren inom collection user i MongoDB
+const User = mongoose.model("user", userSchema);
+// Export för att använda inom resten av filerna
+module.exports = User;
