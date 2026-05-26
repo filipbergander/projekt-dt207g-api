@@ -11,7 +11,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Importerar modellen för en user
-const User = require("../models/user.js");
+const Dinner = require("../models/dinner.js");
 
 // Registera en ny användare
 router.post("/register", async(req, res) => {

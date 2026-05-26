@@ -31,8 +31,7 @@ const userSchema = new mongoose.Schema({
     // Roll
     role: {
         type: String,
-        require: true,
-        default: "Personal"
+        default: "personal"
     },
 
     // Timestamp när kontot blev skapat
@@ -99,5 +98,5 @@ userSchema.statics.login = async function(email, password) {
     }
     // Lägger till den tillagda användaren inom collection user i MongoDB
 const User = mongoose.model("user", userSchema);
-// Export för att använda inom resten av 
+// Export för att använda inom resten av projektet
 module.exports = User;
