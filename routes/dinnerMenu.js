@@ -1,5 +1,3 @@
-// Autentisering
-
 // Paket
 const express = require('express');
 const mongoose = require('mongoose');
@@ -10,124 +8,63 @@ const cors = require('cors');
 // För att kunna använda miljövariabler
 require('dotenv').config();
 
-// Importerar modellen för en user
+// Importerar modellen för en middags-maträtt
 const Dinner = require("../models/dinner.js");
 
-// Registera en ny användare
-router.post("/register", async(req, res) => {
+// Lägg till en ny maträtt
+router.post("/dinnermeal", async(req, res) => {
     try {
-        const { username, email, password, role } = req.body;
+        const { category, name, description, price } = req.body;
+
         // Validera att alla fält blivit angivna
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: "Ej fullständig information angiven. Kräver användarnamn, mejl, lösenord och roll" });
+        if (!category || !name || !description || !price) {
+            return res.status(400).json({ error: "Ej fullständig information angiven för en maträtt. Ange text för varje fält!" });
         }
-        // Validera lösenord
-        if (password.length < 6) {
-            return res.status(400).json({ error: "Lösenordet måste vara minst 6 tecken..." })
+
+        // Validera kategori
+        const categories = ["förrätt", "varmrätt", "efterrätt"];
+        if (!categories.includes(category.toLowerCase())) {
+            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, varmrätt eller efterrätt" });
         }
-        // Om man lyckas med registreringen
-        const user = new User({ username, email, password, role });
-        await user.save(); // Sparar användaren genom user-modellen
+
+        // Validera beskrivning
+        if (description.length < 6 || description.length > 80) {
+            return res.status(400).json({ error: "Beskrivning för en maträtt måste vara mellan 6 och 80 tecken" });
+        }
+
+        // Validera priset
+        if (price.value <= 0) {
+            return res.status(400).json({ error: "Priset måste vara större än 0" });
+        }
+
+
+        // Om man lyckas med att lägga till en maträtt
+        const dinner = new Dinner({ category, name, description, price });
+        await dinner.save(); // Sparar maträtten
+
         // Success-meddelande
         res.status(201).json({
-            message: "Ny användare har skapats!",
-            user: {
-                username,
-                email,
-                role
+            message: "Ny maträtt har skapats!",
+            dinner: {
+                category,
+                name,
+                description,
+                price
             }
         });
-        // Felmeddelanden
     } catch (error) {
-        /* Om man försöker spara en användare som redan finns,
-         eftersom användarnamn och mejl är unika */
+        // Om man försöker lägga till en maträtt som redan finns
         if (error.code === 11000) {
-            // Användarnamnet används redan?
-            if (error.keyPattern.username) {
-                return res.status(400).json({ error: "Användarnamnet används redan!" })
-            }
-            // Emailen används redan?
-            if (error.keyPattern.email) {
-                return res.status(400).json({ error: "Mejlen används redan!" })
+            // Finns maträtten redan?
+            if (error.keyPattern.name) {
+                return res.status(400).json({ error: "Maträtten finns redan!" })
             }
         }
-        res.status(500).json({ error: "Fel på server när en användare skulle registreras..." });
+        // Slutligt felmeddelande
+        res.status(500).json({ error: "Fel på server när maträtten skulle läggas till..." });
         console.error(error);
         return;
     }
-});
-
-// Logga in en befintlig användare
-router.post("/login", async(req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // Validera input
-        if (!email || !password) {
-            return res.status(400).json({
-                response: {
-                    error: "Felaktig information angivet. Ange korrekt mejl och lösenord!"
-                }
-            });
-        }
-
-        // Finns användaren redan?
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({
-                response: {
-                    error: "Felaktig mejl eller lösenord!"
-                }
-            })
-        }
-
-        // Stämmer lösenorden med varandra? Angivet/lagrat
-        const isPasswordMatch = await user.comparePassword(password);
-        if (!isPasswordMatch) {
-            return res.status(401).json({
-                response: {
-                    error: "Felaktig mejl eller lösenord!"
-                }
-            })
-        }
-
-        // Skapa jsonwebtoken
-        else {
-            const payload = {
-                username: user.username,
-                role: user.role
-            };
-            // Token som finns i en timme
-            const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-            res.status(200).json({
-                response: {
-                    message: "Användare inloggad",
-                    user: {
-                        username: user.username,
-                        email: user.email,
-                        role: user.role,
-                        created: {
-                            raw: user.createdAt,
-                            formatted: user.createdAt.toLocaleString("sv-SE", {
-                                dateStyle: "long",
-                                timeStyle: "short"
-                            })
-                        }
-                    },
-                    token
-                }
-            });
-        }
-        // Felmeddelande om inloggningen inte fungerar
-    } catch (error) {
-        res.status(500).json({
-            response: {
-                error: "Fel på server vid inloggning"
-            }
-        });
-        console.error(error);
-    }
-    console.log("Inloggning kallad...");
 });
 
 // Exporterar router för att använda i server.js

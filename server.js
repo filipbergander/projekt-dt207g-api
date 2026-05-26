@@ -26,6 +26,10 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 
 // Routes
 const authRoutes = require("./routes/authRoutes.js");
+const dinnerRoutes = require("./routes/dinnerMenu.js");
+
+// Använder routes
+app.use("/", dinnerRoutes);
 app.use("/", authRoutes);
 
 // Välkomstmeddelande för webbtjänsten
