@@ -7,12 +7,15 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
+// Tar med middleware för att se över användarens behörighet med JWT
+const authenticateToken = require('../middleware/authToken.js');
+
 // För att kunna använda miljövariabler
 require('dotenv').config();
 
 // Importerar modellen för en user
 const User = require("../models/user.js");
-const authenticateToken = require('../middleware/authToken.js');
+
 
 // Registera en ny användare
 router.post("/register", authenticateToken, async(req, res) => {

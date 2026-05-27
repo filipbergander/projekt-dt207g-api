@@ -81,7 +81,26 @@ router.post("/dinner", authenticateToken, async(req, res) => {
 });
 
 // Radera en maträtt från middagsmenyn
-router.delete("/dinner/:id", authenticateToken, async(req, res) => {});
+router.delete("/dinner/:id", authenticateToken, async(req, res) => {
+    try {
+        let result = await Dinner.findByIdAndDelete(req.params.id);
+
+        // Om det inte finns något ID med det man försöker radera
+        if (!result) return res.status(404).json({ message: "Ange ett ID som finns med i databasen för middagsmenyn!" });
+
+        // Om man lyckas med raderingen
+        return res.json({
+            message: "Maträtten i middagsmenyn raderades från databasen",
+            deleted: result
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID",
+            details: error.message
+        });
+    }
+
+});
 
 // Exporterar router för att använda i server.js
 module.exports = router;
