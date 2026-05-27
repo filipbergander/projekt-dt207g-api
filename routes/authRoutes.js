@@ -12,9 +12,10 @@ require('dotenv').config();
 
 // Importerar modellen för en user
 const User = require("../models/user.js");
+const authenticateToken = require('../middleware/authToken.js');
 
 // Registera en ny användare
-router.post("/register", async(req, res) => {
+router.post("/register", authenticateToken, async(req, res) => {
     try {
         const { username, email, password, role } = req.body;
         // Validera att alla fält blivit angivna

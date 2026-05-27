@@ -5,14 +5,27 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
+// Tar med middleware för att se över användarens behörighet med JWT
+const authenticateToken = require("../middleware/authToken.js");
+
 // För att kunna använda miljövariabler
 require('dotenv').config();
 
 // Importerar modellen för en middags-maträtt
 const Dinner = require("../models/dinner.js");
 
-// Lägg till en ny maträtt
-router.post("/dinnermeal", async(req, res) => {
+// Hämta alla maträtter
+router.get("/dinner", authenticateToken, async(req, res) => {
+    try {
+        const dishes = await Dinner.find();
+        res.json(dishes);
+    } catch (error) {
+        res.status(500).json({ error: "Kunde inte hämta maträtter från middagsmenyn" });
+    }
+});
+
+// Lägga till en ny maträtt
+router.post("/dinner", authenticateToken, async(req, res) => {
     try {
         const { category, name, description, price } = req.body;
 
@@ -22,19 +35,19 @@ router.post("/dinnermeal", async(req, res) => {
         }
 
         // Validera kategori
-        const categories = ["förrätt", "varmrätt", "efterrätt"];
-        if (!categories.includes(category.toLowerCase())) {
-            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, varmrätt eller efterrätt" });
+        const categories = ["Förrätt", "Huvudrätt", "Efterrätt"];
+        if (!categories.includes(category)) {
+            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, huvudrätt eller efterrätt" });
         }
 
         // Validera beskrivning
-        if (description.length < 6 || description.length > 80) {
-            return res.status(400).json({ error: "Beskrivning för en maträtt måste vara mellan 6 och 80 tecken" });
+        if (description.length < 6 || description.length > 100) {
+            return res.status(400).json({ error: "Beskrivning för en maträtt måste vara mellan 6 och 100 tecken" });
         }
 
         // Validera priset
-        if (price.value <= 0) {
-            return res.status(400).json({ error: "Priset måste vara större än 0" });
+        if (price <= 0 || price > 1000) {
+            return res.status(400).json({ error: "Priset måste vara större än 0 men under 1000 kr" });
         }
 
 
@@ -60,12 +73,15 @@ router.post("/dinnermeal", async(req, res) => {
                 return res.status(400).json({ error: "Maträtten finns redan!" })
             }
         }
-        // Slutligt felmeddelande
+        // Slutlig felmeddelande
         res.status(500).json({ error: "Fel på server när maträtten skulle läggas till..." });
         console.error(error);
         return;
     }
 });
+
+// Radera en maträtt från middagsmenyn
+router.delete("/dinner/:id", authenticateToken, async(req, res) => {});
 
 // Exporterar router för att använda i server.js
 module.exports = router;
