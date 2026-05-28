@@ -15,7 +15,7 @@ require('dotenv').config();
 const Dinner = require("../models/dinner.js");
 
 // Hämta alla maträtter
-router.get("/dinner", authenticateToken, async(req, res) => {
+router.get("/dinner", async(req, res) => {
     try {
         const dishes = await Dinner.find();
         res.json(dishes);
