@@ -21,7 +21,7 @@ mongoose.set("strictQuery", false);
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.log("Ansluten mot databasen mongoDB!")
 }).catch((error) => {
-    console.error("Fel vid anslutning mot mongoDB...");
+    console.error("Fel vid anslutning mot mongoDB: ", error);
 });
 
 // Routes
