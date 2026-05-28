@@ -25,9 +25,7 @@ const dinnerSchema = new mongoose.Schema({
     // Beskrivning
     description: {
         type: String,
-        required: true,
-        minlength: 6,
-        maxlength: 80
+        required: false,
     },
 
     // Pris

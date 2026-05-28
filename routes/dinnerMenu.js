@@ -48,19 +48,21 @@ router.post("/dinner", authenticateToken, async(req, res) => {
     try {
         const { category, name, description, price } = req.body;
 
+        const validateDrink = category === "Dryck";
+
         // Validera att alla fält blivit angivna
-        if (!category || !name || !description || !price) {
+        if (!category || !name || !price) {
             return res.status(400).json({ error: "Ej fullständig information angiven för en maträtt. Ange text för varje fält!" });
         }
 
         // Validera kategori
-        const categories = ["Förrätt", "Huvudrätt", "Efterrätt"];
+        const categories = ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"];
         if (!categories.includes(category)) {
-            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, huvudrätt eller efterrätt" });
+            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, huvudrätt, efterrätt eller dryck." });
         }
 
         // Validera beskrivning
-        if (description.length < 6 || description.length > 100) {
+        if (!validateDrink && (description.length < 6 || description.length > 100)) {
             return res.status(400).json({ error: "Beskrivning för en maträtt måste vara mellan 6 och 100 tecken" });
         }
 
