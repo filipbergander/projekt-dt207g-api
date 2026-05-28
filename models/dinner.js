@@ -17,7 +17,9 @@ const dinnerSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        trim: true
+        trim: true,
+        minlength: 3,
+        maxlength: 40
     },
 
     // Beskrivning

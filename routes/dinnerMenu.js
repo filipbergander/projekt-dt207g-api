@@ -24,6 +24,25 @@ router.get("/dinner", authenticateToken, async(req, res) => {
     }
 });
 
+// Hämta specifik rätt från middagsmenyn
+router.get("/dinner/:id", authenticateToken, async(req, res) => {
+    try {
+        const id = req.params.id;
+
+        const dish = await Dinner.findById(id);
+
+        if (!dish) {
+            return res.status(404).json({ error: "Ingen maträtt hittades med angivet ID!" })
+        }
+        res.json(dish);
+    } catch (error) {
+        res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        })
+    }
+});
+
 // Lägga till en ny maträtt
 router.post("/dinner", authenticateToken, async(req, res) => {
     try {
@@ -83,23 +102,53 @@ router.post("/dinner", authenticateToken, async(req, res) => {
 // Radera en maträtt från middagsmenyn
 router.delete("/dinner/:id", authenticateToken, async(req, res) => {
     try {
-        let result = await Dinner.findByIdAndDelete(req.params.id);
+        // Hittar maträtt genom id och raderar från databasen
+        let deleteDish = await Dinner.findByIdAndDelete(req.params.id);
 
         // Om det inte finns något ID med det man försöker radera
-        if (!result) return res.status(404).json({ message: "Ange ett ID som finns med i databasen för middagsmenyn!" });
+        if (!deleteDish) return res.status(404).json({ message: "Ingen middagsrätt med detta ID hittades!" });
 
         // Om man lyckas med raderingen
         return res.json({
             message: "Maträtten i middagsmenyn raderades från databasen",
-            deleted: result
+            deleted: deleteDish
         });
     } catch (error) {
         return res.status(400).json({
-            error: "Fel format på angivet ID",
+            error: "Fel format på angivet ID eller ogiltigt värde",
             details: error.message
         });
     }
+});
 
+// Uppdatera en maträtt från middagsmenyn
+router.put("/dinner/:id", authenticateToken, async(req, res) => {
+    try {
+        // Hämtar id i requsten för att använda till att radera en post
+        const id = req.params.id;
+
+        // Hämtar värden som angetts från frontend
+        const { category, name, price, description } = req.body;
+
+        // Letar efter en maträtt för att uppdatera genom ID
+        let updateDish = await Dinner.findByIdAndUpdate(id, { category, name, price, description }, {
+            new: true // Får tillbaka den uppdaterade "versionen" av maträtten
+        });
+
+        // Om det inte finns något ID med det man försöker radera
+        if (!updateDish) return res.status(404).json({ message: "Ingen middagsrätt med detta ID hittades!" });
+
+        // Om man lyckas med raderingen
+        return res.json({
+            message: "Maträtten i middagsmenyn uppdaterades!",
+            deleted: updateDish
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        });
+    }
 });
 
 // Exporterar router för att använda i server.js
