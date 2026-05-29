@@ -66,8 +66,8 @@ router.post("/", upload.single("image"), authenticateToken, async(req, res) => {
     try {
         const newImage = await categoryImage.create({
             category,
-            image: `http://localhost:3000/${req.file.path}`,
-            alt
+            alt,
+            image: req.file ? `http://localhost:3000/uploads/${req.file.filename}` : null
         });
 
         // Success-meddelande
@@ -82,6 +82,10 @@ router.post("/", upload.single("image"), authenticateToken, async(req, res) => {
             if (error.keyPattern.category) {
                 return res.status(400).json({ error: "Kategorin har redan en bild" })
             }
+        }
+        // Om man försöker ange fel kategori eller stavar fel...
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ error: "Något gick fel: " + error.message });
         }
         // Slutlig felmeddelande
         console.error(error);

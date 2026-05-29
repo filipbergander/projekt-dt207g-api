@@ -8,6 +8,7 @@ const categoryImageSchema = new mongoose.Schema({
     // Kategori för en maträtt
     category: {
         type: String,
+        enum: ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"],
         required: [true, "En kategori måste anges!"],
         unique: true
     },
