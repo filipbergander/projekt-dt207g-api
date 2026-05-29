@@ -6,9 +6,10 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const sharp = require('sharp');
 
 // Vart filerna av bilder ska lagras
-const storage = multer.diskStorage({
+/*const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/");
     }, // Unikt filnamn för varje bild så att de inte skriver över varandra
@@ -16,9 +17,9 @@ const storage = multer.diskStorage({
         const ext = path.extname(file.originalname);
         cb(null, `${Date.now()}${ext}`);
     }
-})
+})*/
 
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Tar med middleware för att se över användarens behörighet med JWT
 const authenticateToken = require("../middleware/authToken.js");
@@ -63,11 +64,21 @@ router.get("/:id", authenticateToken, async(req, res) => {
 router.post("/", upload.single("image"), authenticateToken, async(req, res) => {
     const { category, image, alt } = req.body;
     console.log(req.file);
+
+    const outputFilename = `${Date.now()}.jpg`;
+
+    if (req.file) {
+        await sharp(req.file.buffer)
+            .resize(300, 300, { fit: "cover" })
+            .jpeg({ quality: 80 })
+            .toFile(`uploads/${outputFilename}`);
+    }
+
     try {
         const newImage = await categoryImage.create({
             category,
             alt,
-            image: req.file ? `http://localhost:3000/uploads/${req.file.filename}` : null
+            image: req.file ? `http://localhost:3000/uploads/${outputFilename}` : null
         });
 
         // Success-meddelande
