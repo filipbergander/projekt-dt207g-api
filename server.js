@@ -29,8 +29,9 @@ const authRoutes = require("./routes/authRoutes.js");
 const dinnerRoutes = require("./routes/dinnerMenu.js");
 
 // Använder routes
-app.use("/", dinnerRoutes);
+app.use("/dinner", dinnerRoutes);
 app.use("/", authRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Välkomstmeddelande för webbtjänsten
 app.get('/', async(req, res) => {

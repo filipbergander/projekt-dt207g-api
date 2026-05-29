@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// Schema för en en ny maträtt
+// Schema för en ny maträtt
 const dinnerSchema = new mongoose.Schema({
 
     // Kategori för en maträtt

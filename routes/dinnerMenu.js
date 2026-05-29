@@ -15,7 +15,7 @@ require('dotenv').config();
 const Dinner = require("../models/dinner.js");
 
 // Hämta alla maträtter
-router.get("/dinner", async(req, res) => {
+router.get("/", async(req, res) => {
     try {
         const dishes = await Dinner.find();
         res.json(dishes);
@@ -25,7 +25,7 @@ router.get("/dinner", async(req, res) => {
 });
 
 // Hämta specifik rätt från middagsmenyn
-router.get("/dinner/:id", authenticateToken, async(req, res) => {
+router.get("/:id", authenticateToken, async(req, res) => {
     try {
         const id = req.params.id;
 
@@ -44,7 +44,7 @@ router.get("/dinner/:id", authenticateToken, async(req, res) => {
 });
 
 // Lägga till en ny maträtt
-router.post("/dinner", authenticateToken, async(req, res) => {
+router.post("/", authenticateToken, async(req, res) => {
     try {
         const { category, name, description, price } = req.body;
 
@@ -102,7 +102,7 @@ router.post("/dinner", authenticateToken, async(req, res) => {
 });
 
 // Radera en maträtt från middagsmenyn
-router.delete("/dinner/:id", authenticateToken, async(req, res) => {
+router.delete("/:id", authenticateToken, async(req, res) => {
     try {
         // Hittar maträtt genom id och raderar från databasen
         let deleteDish = await Dinner.findByIdAndDelete(req.params.id);
@@ -124,7 +124,7 @@ router.delete("/dinner/:id", authenticateToken, async(req, res) => {
 });
 
 // Uppdatera en maträtt från middagsmenyn
-router.put("/dinner/:id", authenticateToken, async(req, res) => {
+router.put("/:id", authenticateToken, async(req, res) => {
     try {
         // Hämtar id i requsten för att använda till att radera en post
         const id = req.params.id;
