@@ -4,6 +4,7 @@ const bodyParser = require('body-parser'); // Kunna läsa JSON-data
 const mongoose = require('mongoose'); // Mongoose-paketet
 const cors = require('cors'); // Möjliggör anslutning från annan domän
 const port = process.env.PORT || 3000; // Portanslutning
+const path = require('path');
 
 // För att kunna använda miljövariabler
 require('dotenv').config();
@@ -14,7 +15,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
-
 
 // Ansluter mot mongoDB
 mongoose.set("strictQuery", false);
@@ -27,10 +27,14 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 // Routes
 const authRoutes = require("./routes/authRoutes.js");
 const dinnerRoutes = require("./routes/dinnerMenu.js");
+const categoryImageRoutes = require("./routes/categoryImage.js");
 
 // Använder routes
 app.use("/dinner", dinnerRoutes);
 app.use("/", authRoutes);
+app.use("/category-image", categoryImageRoutes);
+
+// Statisk route för bilderna
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Välkomstmeddelande för webbtjänsten
