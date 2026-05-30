@@ -45,6 +45,7 @@ router.get("/:id", authenticateToken, async(req, res) => {
 
 // Lägga till en ny maträtt
 router.post("/", authenticateToken, async(req, res) => {
+    const name = req.body.name.trim().toLowerCase();
     try {
         const { category, name, description, price } = req.body;
 

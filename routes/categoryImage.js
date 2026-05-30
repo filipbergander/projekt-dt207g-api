@@ -145,20 +145,32 @@ router.delete("/:id", authenticateToken, async(req, res) => {
 });
 
 // Uppdatera en bild
-router.put("/:id", authenticateToken, async(req, res) => {
+router.put("/:id", authenticateToken, upload.single("image"), async(req, res) => {
     try {
         // Hämtar id i requsten för att använda till att radera en post
         const id = req.params.id;
 
         // Hämtar värden som angetts från frontend
         const { category, alt } = req.body;
+        let updatedData = { category, alt };
+
+        if (req.file) {
+            const outputFilename = `${Date.now()}.jpg`;
+
+            await sharp(req.file.buffer)
+                .resize(300, 300, { fit: "cover" })
+                .jpeg({ quality: 80 })
+                .toFile(`uploads/${outputFilename}`);
+
+            updatedData.image = `http://localhost:3000/uploads/${outputFilename}`;
+        }
 
         // Letar efter en bild för att uppdatera genom ID
         let updateImage = await categoryImage.findByIdAndUpdate(id, { category, alt }, {
             new: true // Får tillbaka den uppdaterade "versionen" av bildens information
         });
 
-        // Om det inte finns något ID med det man försöker radera
+        // Om det inte finns något ID med det man försöker uppdatera
         if (!updateImage) return res.status(404).json({ message: "Ingen bild med detta ID hittades!" });
 
         // Om man lyckas med raderingen
@@ -167,6 +179,19 @@ router.put("/:id", authenticateToken, async(req, res) => {
             deleted: updateImage
         });
     } catch (error) {
+        // Om man försöker lägga till en bild som redan finns
+        if (error.code === 11000) {
+            // Finns bilden redan?
+            if (error.keyPattern.category) {
+                return res.status(400).json({ error: "Kategorin har redan en bild" })
+            }
+        }
+        // Om man försöker ange fel kategori eller stavar fel...
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ error: "Något gick fel: " + error.message });
+        }
+        // Slutlig felmeddelande
+        console.error(error);
         return res.status(400).json({
             error: "Fel format på angivet ID eller ogiltigt värde",
             details: error.message
