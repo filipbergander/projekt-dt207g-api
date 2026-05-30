@@ -29,6 +29,10 @@ router.post("/register", authenticateToken, async(req, res) => {
         if (password.length < 6) {
             return res.status(400).json({ error: "Lösenordet måste vara minst 6 tecken..." })
         }
+
+        if (email.length < 5 || !email.includes("@") || !email.includes(".")) {
+            return res.status(400).json({ error: "Felaktig mejladress angiven!" })
+        }
         // Om man lyckas med registreringen
         const user = new User({ username, email, password, role });
         await user.save(); // Sparar användaren genom user-modellen

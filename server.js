@@ -30,9 +30,9 @@ const dinnerRoutes = require("./routes/dinnerMenu.js");
 const categoryImageRoutes = require("./routes/categoryImage.js");
 
 // Använder routes
+app.use("/dinner/category-images", categoryImageRoutes);
 app.use("/dinner", dinnerRoutes);
 app.use("/", authRoutes);
-app.use("/category-image", categoryImageRoutes);
 
 // Statisk route för bilderna
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
