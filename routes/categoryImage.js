@@ -48,18 +48,17 @@ router.get("/", async(req, res) => {
     }
 });
 
-/*
+
 // Hämta specifik bild från menyn
 router.get("/:id", authenticateToken, async(req, res) => {
     try {
         const id = req.params.id;
 
-        const dish = await Dinner.findById(id);
-
-        if (!dish) {
-            return res.status(404).json({ error: "Ingen maträtt hittades med angivet ID!" })
+        const image = await categoryImage.findById(id); // Försöker hämta bild genom id
+        if (!image) {
+            return res.status(404).json({ error: "Ingen bild hittades med angivet ID!" })
         }
-        res.json(dish);
+        res.json(image);
     } catch (error) {
         res.status(400).json({
             error: "Fel format på angivet ID eller ogiltigt värde",
@@ -67,7 +66,7 @@ router.get("/:id", authenticateToken, async(req, res) => {
         })
     }
 });
-*/
+
 // Lägga till en ny kategori-bild
 router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
     try {
@@ -122,6 +121,59 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
         res.status(500).json({ error: "Fel på server när bilden skulle laddas upp..." });
     }
 });
+
+// Radera en kategoribild från menyn
+router.delete("/:id", authenticateToken, async(req, res) => {
+    try {
+        // Hittar bilden genom id och raderar från databasen
+        let deleteCategoryImage = await categoryImage.findByIdAndDelete(req.params.id);
+
+        // Om det inte finns något ID med bilden man försöker radera
+        if (!deleteCategoryImage) return res.status(404).json({ message: "Ingen bild hittades med detta ID!" });
+
+        // Om man lyckas med raderingen
+        return res.json({
+            message: "Bilden raderades från databasen",
+            deleted: deleteCategoryImage
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        });
+    }
+});
+
+// Uppdatera en bild
+router.put("/:id", authenticateToken, async(req, res) => {
+    try {
+        // Hämtar id i requsten för att använda till att radera en post
+        const id = req.params.id;
+
+        // Hämtar värden som angetts från frontend
+        const { category, alt } = req.body;
+
+        // Letar efter en bild för att uppdatera genom ID
+        let updateImage = await categoryImage.findByIdAndUpdate(id, { category, alt }, {
+            new: true // Får tillbaka den uppdaterade "versionen" av bildens information
+        });
+
+        // Om det inte finns något ID med det man försöker radera
+        if (!updateImage) return res.status(404).json({ message: "Ingen bild med detta ID hittades!" });
+
+        // Om man lyckas med raderingen
+        return res.json({
+            message: "Bildens information uppdaterades!",
+            deleted: updateImage
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        });
+    }
+});
+
 
 // Exporterar router för att använda i server.js
 module.exports = router;
