@@ -26,6 +26,9 @@ const dinnerSchema = new mongoose.Schema({
     description: {
         type: String,
         required: false,
+        trim: true,
+        minLength: 6,
+        maxLength: 100
     },
 
     // Pris
@@ -37,7 +40,7 @@ const dinnerSchema = new mongoose.Schema({
     // Timestamp när maträtten lades till
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     }
 });
 

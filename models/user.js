@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     // Timestamp när kontot blev skapat
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     }
 });
 

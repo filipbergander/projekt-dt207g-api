@@ -45,7 +45,6 @@ router.get("/:id", authenticateToken, async(req, res) => {
 
 // Lägga till en ny maträtt
 router.post("/", authenticateToken, async(req, res) => {
-    const name = req.body.name.trim().toLowerCase();
     try {
         const { category, name, description, price } = req.body;
 
@@ -90,7 +89,7 @@ router.post("/", authenticateToken, async(req, res) => {
     } catch (error) {
         // Om man försöker lägga till en maträtt som redan finns
         if (error.code === 11000) {
-            // Finns maträtten redan?
+            // Finns maträttens namn redan?
             if (error.keyPattern.name) {
                 return res.status(400).json({ error: "Maträtten finns redan!" })
             }

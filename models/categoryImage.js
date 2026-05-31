@@ -26,7 +26,7 @@ const categoryImageSchema = new mongoose.Schema({
     // Timestamp när bilden lades till
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     }
 });
 
