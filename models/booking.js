@@ -15,7 +15,8 @@ const bookingSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, "Ange din mejl"],
-        trim: true
+        trim: true,
+        minLength: 5,
     },
 
     // Antal gäster
@@ -38,7 +39,8 @@ const bookingSchema = new mongoose.Schema({
     phone: {
         type: String,
         required: [true, "Ange ditt telefonnummer"],
-        trim: true
+        trim: true,
+        minLength: 8,
     },
     // Eventuella meddelanden som användaren vill lämna
     message: {

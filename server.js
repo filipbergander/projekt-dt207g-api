@@ -28,9 +28,11 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 const authRoutes = require("./routes/authRoutes.js");
 const dinnerRoutes = require("./routes/dinnerMenu.js");
 const categoryImageRoutes = require("./routes/categoryImage.js");
+const bookingRoutes = require("./routes/booking.js");
 
 // Använder routes
 app.use("/dinner/category-images", categoryImageRoutes);
+app.use("/dinner/bookings", bookingRoutes);
 app.use("/dinner", dinnerRoutes);
 app.use("/", authRoutes);
 
