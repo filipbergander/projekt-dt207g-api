@@ -16,7 +16,44 @@ require('dotenv').config();
 // Importerar modellen för en bokning
 const Booking = require("../models/booking.js");
 
-// Skapa en ny bokning
+// Hämta bokningar, krävs autentisering
+router.get("/", authenticateToken, async(req, res) => {
+    // Hämtar in alla bokningar och sorterar dem efter tidigaste datum först i ordningen
+    try {
+        const bookings = await Booking.find().sort({ date: 1 });
+        res.json(bookings);
+        if (bookings.length === 0) {
+            return res.status(404).json({ message: "Inga bokningar finns än!" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Kunde inte hämta bokningar från middagsmenyn" });
+    }
+
+});
+
+// Radera en bokning
+router.delete("/:id", authenticateToken, async(req, res) => {
+    try {
+        // Hittar en bokning genom id och raderar från databasen
+        let booking = await Booking.findByIdAndDelete(req.params.id);
+
+        // Om det inte finns något ID med det man försöker radera
+        if (!booking) return res.status(404).json({ message: "Ingen bokning med detta ID hittades!" });
+
+        // Om man lyckas med raderingen av en bokning
+        return res.json({
+            message: "Bokningen för en middag raderades!",
+            deleted: booking
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        });
+    }
+});
+
+// Skapa en ny bokning, öppen-route för besökare
 router.post("/", async(req, res) => {
     try {
         const { name, email, guests, date, time, phone, message } = req.body;
@@ -88,20 +125,7 @@ router.post("/", async(req, res) => {
     }
 });
 
-// Hämta bokningar, krävs autentisering
-router.get("/", authenticateToken, async(req, res) => {
-    // Hämtar in alla bokningar och sorterar dem efter tidigaste datum först i ordningen
-    try {
-        const bookings = await Booking.find().sort({ date: 1 });
-        res.json(bookings);
-        if (bookings.length === 0) {
-            return res.status(404).json({ message: "Inga bokningar finns än!" });
-        }
-    } catch (error) {
-        res.status(500).json({ error: "Kunde inte hämta bokningar från middagsmenyn" });
-    }
 
-});
 
 // Exporterar router för att använda i server.js
 module.exports = router;
