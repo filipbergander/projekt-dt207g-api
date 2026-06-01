@@ -7,13 +7,17 @@ const newsSchema = new mongoose.Schema({
     headline: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        minlength: 5,
+        maxlength: 70
     },
     content: {
         type: String,
         required: true,
         unique: true,
-        trim: true
+        trim: true,
+        minLength: 10,
+        maxLength: 150
     },
     created: {
         type: Date,
