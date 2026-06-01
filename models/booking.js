@@ -9,7 +9,8 @@ const bookingSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "Ange ditt namn"],
-        trim: true
+        trim: true,
+        maxLength: 30
     },
 
     email: {
@@ -17,13 +18,15 @@ const bookingSchema = new mongoose.Schema({
         required: [true, "Ange din mejl"],
         trim: true,
         minLength: 5,
+        maxLength: 40
     },
 
     // Antal gäster
     guests: {
         type: Number,
         required: [true, "Ange antal gäster"],
-        minLength: 1
+        minLength: 1,
+        maxLength: 10
     },
     // Datum för bokningen
     date: {
@@ -40,13 +43,13 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: [true, "Ange ditt telefonnummer"],
         trim: true,
-        minLength: 8,
+        minLength: 7,
+        maxLength: 16
     },
     // Eventuella meddelanden som användaren vill lämna
     message: {
         type: String,
         trim: true,
-        minLength: 6,
         maxLength: 150
     },
     // Om bokningen är godkänd eller inte av personalen

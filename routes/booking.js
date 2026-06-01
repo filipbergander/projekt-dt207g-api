@@ -21,10 +21,7 @@ router.get("/", authenticateToken, async(req, res) => {
     // Hämtar in alla bokningar och sorterar dem efter tidigaste datum först i ordningen
     try {
         const bookings = await Booking.find().sort({ date: 1 });
-        res.json(bookings);
-        if (bookings.length === 0) {
-            return res.status(404).json({ message: "Inga bokningar finns än!" });
-        }
+        return res.json(bookings);
     } catch (error) {
         res.status(500).json({ error: "Kunde inte hämta bokningar från middagsmenyn" });
     }
@@ -63,13 +60,19 @@ router.post("/", async(req, res) => {
             return res.status(400).json({ error: "En bokning kräver information i alla nödvändiga textfält" });
         }
 
+        if (name.length > 30) {
+            return res.status(400).json({ error: "Namnet kan högst vara 30 tecken!" })
+        }
+
         // Validera särskilda inputs för en bokning
-        if (email.length < 5 || !email.includes("@") || !email.includes(".")) {
+        if (email.length < 5 || !email.includes("@") || !email.includes(".") || email.length > 40) {
             return res.status(400).json({ error: "Felaktig mejladress angiven!" })
         }
 
         if (guests < 1) {
             return res.status(400).json({ error: "En bokning kräver åtminstone en gäst" })
+        } else if (guests > 10) {
+            return res.status(400).json({ error: "Vi tar just nu inte emot bokningar på över 10 gäster!" })
         }
 
         // Validerar datumet som en sträng med formatet yyyy-mm-dd
@@ -86,8 +89,8 @@ router.post("/", async(req, res) => {
             return res.status(400).json({ error: "Felaktigt telefonnummer angivet, behöver vara mellan än 7 och 16 nummer!" })
         }
 
-        if (message && (message.length < 6 || message.length > 150)) {
-            return res.status(400).json({ error: "Meddelandet måste vara mellan 6 och 150 tecken!" })
+        if (message && message.length > 150) {
+            return res.status(400).json({ error: "Meddelandet kan högst vara 150 tecken!" })
         }
 
         // Om man försöker skapa dubbla bokningar, vid till exempel spamming eller av misstag
