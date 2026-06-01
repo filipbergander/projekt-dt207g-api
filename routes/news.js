@@ -114,4 +114,55 @@ router.delete("/:id", authenticateToken, async(req, res) => {
     }
 });
 
+// Uppdatera nyhetsinlägget
+router.put("/:id", authenticateToken, async(req, res) => {
+    try {
+        // Hämtar id i requsten för att använda till att uppdatera posten
+        const id = req.params.id;
+
+        // Hämtar värden som angetts från frontend
+        const { headline, content } = req.body;
+
+        if (!headline || !content) {
+            return res.status(400).json({ error: "Ett inlägg kräver rubrik och innehåll!" })
+        }
+
+        if (headline.length < 5) {
+            return res.status(400).json({ error: "Rubriken måste vara minst 5 tecken!" })
+        } else if (headline.length > 70) {
+            return res.status(400).json({ error: "Rubriken kan högst vara 70 tecken!" })
+        }
+
+        if (content.length < 10) {
+            return res.status(400).json({ error: "Ett inlägg kräver över 10 tecken för sitt innehåll!" })
+        } else if (content.length > 150) {
+            return res.status(400).json({ error: "Ett inläggs innehåll kan högst vara 150 tecken!" })
+        }
+
+        // Letar efter en maträtt för att uppdatera genom ID
+        let updatedNewsArticle = await News.findByIdAndUpdate(id, { headline, content }, {
+            new: true // Får tillbaka den uppdaterade "versionen" av nyhetsinlägget
+        });
+
+        // Om det inte finns något ID med det man försöker uppdatera
+        if (!updatedNewsArticle) return res.status(404).json({ message: "Ingen nyhetsinlägg med detta ID hittades!" });
+
+        // Om man lyckas med uppdateringen
+        return res.json({
+            message: "Nyhetsinlägget uppdaterades!",
+            updated: {
+                id: updatedNewsArticle._id,
+                headline: updatedNewsArticle.headline,
+                content: updatedNewsArticle.content,
+                created: updatedNewsArticle.created
+            }
+        });
+    } catch (error) {
+        return res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;

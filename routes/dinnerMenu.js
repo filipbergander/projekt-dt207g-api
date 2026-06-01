@@ -55,6 +55,11 @@ router.post("/", authenticateToken, async(req, res) => {
             return res.status(400).json({ error: "Ej fullständig information angiven för en maträtt. Ange text för varje fält!" });
         }
 
+        //Validera namnet
+        if (name.length < 3 || name.length > 40) {
+            return res.status(400).json({ error: "Ett namn på en rätt behöver vara mellan 3 och 40 tecken långt!" });
+        }
+
         // Validera kategori
         const categories = ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"];
         if (!categories.includes(category)) {
@@ -126,24 +131,50 @@ router.delete("/:id", authenticateToken, async(req, res) => {
 // Uppdatera en maträtt från middagsmenyn
 router.put("/:id", authenticateToken, async(req, res) => {
     try {
-        // Hämtar id i requsten för att använda till att radera en post
+        // Hämtar id i requsten för att använda till att uppdatera posten
         const id = req.params.id;
 
         // Hämtar värden som angetts från frontend
         const { category, name, price, description } = req.body;
+
+        // Om man inte anget någon info alls
+        if (!category || !name || !price) {
+            return res.status(400).json({ error: "Ej fullständig information angiven för en maträtt. Ange text för varje fält!" });
+        }
+
+        // Validera namnet
+        if (name.length < 3 || name.length > 40) {
+            return res.status(400).json({ error: "Ett namn på en rätt behöver vara mellan 3 och 40 tecken långt!" });
+        }
+
+        // Validera kategori
+        const categories = ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"];
+        if (!categories.includes(category)) {
+            return res.status(400).json({ error: "Felaktig kategori angiven. Kategorin måste vara förrätt, huvudrätt, efterrätt eller dryck." });
+        }
+        // Validera beskrivning
+        const validateDrink = category === "Dryck";
+        if (!validateDrink && (description.length < 6 || description.length > 100)) {
+            return res.status(400).json({ error: "Beskrivning för en maträtt måste vara mellan 6 och 100 tecken" });
+        }
+
+        // Validera priset
+        if (price <= 0 || price > 1000) {
+            return res.status(400).json({ error: "Priset måste vara större än 0 men under 1000 kr" });
+        }
 
         // Letar efter en maträtt för att uppdatera genom ID
         let updateDish = await Dinner.findByIdAndUpdate(id, { category, name, price, description }, {
             new: true // Får tillbaka den uppdaterade "versionen" av maträtten
         });
 
-        // Om det inte finns något ID med det man försöker radera
+        // Om det inte finns något ID med det man försöker uppdatera
         if (!updateDish) return res.status(404).json({ message: "Ingen middagsrätt med detta ID hittades!" });
 
-        // Om man lyckas med raderingen
+        // Om man lyckas med uppdateringen
         return res.json({
             message: "Maträtten i middagsmenyn uppdaterades!",
-            deleted: updateDish
+            updated: updateDish
         });
     } catch (error) {
         return res.status(400).json({
