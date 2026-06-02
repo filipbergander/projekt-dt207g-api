@@ -116,9 +116,10 @@ router.post("/", authenticateToken, async(req, res) => {
     }
 });
 
-// Skyddad route för att radera ett nyhetsinlägg, skyddad route
+// Skyddad route för att radera ett nyhetsinlägg
 router.delete("/:id", authenticateToken, async(req, res) => {
     try {
+        // Hittar inlägg genom id och raderar
         let result = await News.findByIdAndDelete(req.params.id);
 
         // Om det inte finns något ID med det man försöker radera
@@ -150,7 +151,7 @@ router.put("/:id", authenticateToken, async(req, res) => {
         if (!headline || !content || !author) {
             return res.status(400).json({ error: "Alla fält måste fyllas i!" })
         }
-
+        // Specifika inputs
         if (headline.length < 5) {
             return res.status(400).json({ error: "Rubriken måste vara minst 5 tecken!" })
         } else if (headline.length > 70) {

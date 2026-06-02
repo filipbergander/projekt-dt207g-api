@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken'); // JWT för tokens
 
+// För att kunna använda miljövariabler
+require('dotenv').config();
+
 // Validera token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
