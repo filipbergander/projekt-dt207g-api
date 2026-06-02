@@ -137,7 +137,7 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
             return res.status(400).json({ error: "Något gick fel: " + error.message });
         }
         // Slutlig felmeddelande
-        console.error("Fel vid uppladdning: ", error);
+        console.error("Fel vid uppladdning: ", error.message, error.stack);
         res.status(500).json({ error: "Fel på server när bilden skulle laddas upp..." });
     }
 });
