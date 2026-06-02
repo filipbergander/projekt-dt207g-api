@@ -13,6 +13,7 @@ const authenticateToken = require("../middleware/authToken.js");
 
 // För att kunna använda miljövariabler
 require('dotenv').config();
+const urlFrontend = process.env.URL_FRONTEND || "http://localhost:3000";
 
 // Importerar modellen för en kategori-bild
 const categoryImage = require("../models/categoryImage.js");
@@ -95,7 +96,7 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
         const newImage = await categoryImage.create({
             category,
             alt,
-            image: req.file ? `http://localhost:3000/uploads/${outputFilename}` : null
+            image: req.file ? `${urlFrontend}/uploads/${outputFilename}` : null
         });
 
         // Success-meddelande
@@ -167,7 +168,7 @@ router.put("/:id", authenticateToken, upload.single("image"), async(req, res) =>
 
         // Letar efter en bild för att uppdatera genom ID
         let updateImage = await categoryImage.findByIdAndUpdate(id, { category, alt }, {
-            new: true // Får tillbaka den uppdaterade "versionen" av bildens information
+            returnDocument: "after" // Får tillbaka den uppdaterade "versionen" av bildens information
         });
 
         // Om det inte finns något ID med det man försöker uppdatera

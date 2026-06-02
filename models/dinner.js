@@ -27,7 +27,6 @@ const dinnerSchema = new mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minLength: 6,
         maxLength: 100
     },
 

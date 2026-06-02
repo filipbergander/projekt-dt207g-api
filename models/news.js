@@ -17,9 +17,15 @@ const newsSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         minLength: 10,
-        maxLength: 150
+        maxLength: 175
     },
-    created: {
+    author: {
+        type: String,
+        required: true,
+        minlength: 3,
+        maxlength: 30
+    },
+    createdAt: {
         type: Date,
         default: Date.now
     }

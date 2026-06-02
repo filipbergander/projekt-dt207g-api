@@ -22,21 +22,17 @@ router.get("/", async(req, res) => {
             id: row._id,
             headline: row.headline,
             content: row.content,
+            author: row.author,
             created: {
-                raw: row.created,
-                formatted: row.created.toLocaleString("sv-SE", {
+                raw: row.createdAt,
+                formatted: row.createdAt.toLocaleString("sv-SE", {
                     dateStyle: "short",
                     timeStyle: "short"
                 }),
-                date: row.created.toLocaleDateString("sv-SE", { dateStyle: "short" }),
-                time: row.created.toLocaleTimeString("sv-SE", { timeStyle: "short" })
+                date: row.createdAt.toLocaleDateString("sv-SE", { dateStyle: "short" }),
+                time: row.createdAt.toLocaleTimeString("sv-SE", { timeStyle: "short" })
             }
         }));
-
-        if (result.length === 0) {
-            return res.status(404).json({ message: "Det finns inga nyhetsinlägg lagrade!" })
-        }
-        console.log(result);
         return res.json(formattedResult);
     } catch (error) {
         console.error(error);
@@ -47,36 +43,61 @@ router.get("/", async(req, res) => {
     }
 });
 
+// Hämtar specifikt inlägg
+router.get("/:id", authenticateToken, async(req, res) => {
+    try {
+        const id = req.params.id;
+
+        const newsArticle = await News.findById(id);
+
+        if (!newsArticle) {
+            return res.status(404).json({ error: "Inget inlägg hittades med angivet ID!" })
+        }
+        res.json(newsArticle);
+    } catch (error) {
+        res.status(400).json({
+            error: "Fel format på angivet ID eller ogiltigt värde",
+            details: error.message
+        })
+    }
+});
+
 // Skyddad route för att lägga till ett nyhetsinlägg, kräver autentisering med JWT genom middleware
 router.post("/", authenticateToken, async(req, res) => {
     try {
         const existingNews = await News.findOne();
 
         if (existingNews) {
-            return res.status(400).json({ error: "Max ett nyhetsinlägg i databasen!" })
+            return res.status(400).json({ error: "Max ett nyhetsinlägg" })
         }
 
-        const { headline, content } = req.body;
+        const { headline, content, author } = req.body;
 
         // Validera input
-        if (!headline || !content) {
+        if (!headline || !content || !author) {
             return res.status(400).json({ error: "Ett inlägg kräver rubrik och innehåll!" })
         }
 
         if (headline.length < 5) {
             return res.status(400).json({ error: "Rubriken måste vara minst 5 tecken!" })
-        } else if (headline.length > 70) {
-            return res.status(400).json({ error: "Rubriken kan högst vara 70 tecken!" })
+        } else if (headline.length > 60) {
+            return res.status(400).json({ error: "Rubriken kan högst vara 60 tecken!" })
         }
 
         if (content.length < 10) {
             return res.status(400).json({ error: "Ett inlägg kräver över 10 tecken för sitt innehåll!" })
-        } else if (content.length > 150) {
-            return res.status(400).json({ error: "Ett inläggs innehåll kan högst vara 150 tecken!" })
+        } else if (content.length > 175) {
+            return res.status(400).json({ error: "Ett inläggs innehåll kan högst vara 175 tecken!" })
+        }
+
+        if (author.length < 3) {
+            return res.status(400).json({ error: "Skribentens namn måste vara minst 3 tecken!" })
+        } else if (author.length > 30) {
+            return res.status(400).json({ error: "Skribentens namn kan högst vara 30 tecken!" })
         }
 
         // Om man angivet alla fälten för ett nyhetsinlägg hamnar man här
-        const news = new News({ headline, content }); // Skapar nytt inlägg enligt schemat
+        const news = new News({ headline, content, author }); // Skapar nytt inlägg enligt schemat
         await news.save();
         res.status(201).json({
             message: "Nytt nyhetsinlägg har publicerats!",
@@ -84,6 +105,8 @@ router.post("/", authenticateToken, async(req, res) => {
                 id: news._id,
                 headline: news.headline,
                 content: news.content,
+                author: news.author,
+                created: news.createdAt
             }
         });
 
@@ -121,10 +144,11 @@ router.put("/:id", authenticateToken, async(req, res) => {
         const id = req.params.id;
 
         // Hämtar värden som angetts från frontend
-        const { headline, content } = req.body;
+        const { headline, content, author } = req.body;
 
-        if (!headline || !content) {
-            return res.status(400).json({ error: "Ett inlägg kräver rubrik och innehåll!" })
+        // Validerar input
+        if (!headline || !content || !author) {
+            return res.status(400).json({ error: "Alla fält måste fyllas i!" })
         }
 
         if (headline.length < 5) {
@@ -135,13 +159,20 @@ router.put("/:id", authenticateToken, async(req, res) => {
 
         if (content.length < 10) {
             return res.status(400).json({ error: "Ett inlägg kräver över 10 tecken för sitt innehåll!" })
-        } else if (content.length > 150) {
-            return res.status(400).json({ error: "Ett inläggs innehåll kan högst vara 150 tecken!" })
+        } else if (content.length > 175) {
+            return res.status(400).json({ error: "Ett inläggs innehåll kan högst vara 175 tecken!" })
         }
 
-        // Letar efter en maträtt för att uppdatera genom ID
-        let updatedNewsArticle = await News.findByIdAndUpdate(id, { headline, content }, {
-            new: true // Får tillbaka den uppdaterade "versionen" av nyhetsinlägget
+        if (author.length < 3) {
+            return res.status(400).json({ error: "Skribentens namn måste vara minst 3 tecken!" })
+        } else if (author.length > 30) {
+            return res.status(400).json({ error: "Skribentens namn kan högst vara 30 tecken!" })
+        }
+
+        // Letar efter ett inlägg för att uppdatera genom ID
+        let updatedNewsArticle = await News.findByIdAndUpdate(id, { headline, content, author }, {
+            returnDocument: "after",
+            runValidators: true
         });
 
         // Om det inte finns något ID med det man försöker uppdatera
@@ -154,7 +185,7 @@ router.put("/:id", authenticateToken, async(req, res) => {
                 id: updatedNewsArticle._id,
                 headline: updatedNewsArticle.headline,
                 content: updatedNewsArticle.content,
-                created: updatedNewsArticle.created
+                created: updatedNewsArticle.createdAt
             }
         });
     } catch (error) {

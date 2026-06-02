@@ -165,7 +165,7 @@ router.put("/:id", authenticateToken, async(req, res) => {
 
         // Letar efter en maträtt för att uppdatera genom ID
         let updateDish = await Dinner.findByIdAndUpdate(id, { category, name, price, description }, {
-            new: true // Får tillbaka den uppdaterade "versionen" av maträtten
+            returnDocument: "after" // Får tillbaka den uppdaterade "versionen" av maträtten
         });
 
         // Om det inte finns något ID med det man försöker uppdatera
