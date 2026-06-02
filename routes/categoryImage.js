@@ -111,7 +111,7 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
         const newImage = await categoryImage.create({
             category,
             alt,
-            image: req.file ? `${urlBackend}/uploads/${outputFilename}` : null
+            image: req.file ? `${urlBackend}uploads/${outputFilename}` : null
         });
 
         // Success-meddelande
