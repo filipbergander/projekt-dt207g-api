@@ -72,17 +72,6 @@ router.get("/:id", authenticateToken, async(req, res) => {
 
 // Lägga till en ny kategori-bild
 router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
-    // Unikt filnamn för varje bild som laddas upp, jpg-format
-    const outputFilename = `${Date.now()}.jpg`;
-
-    // Inställningar och vart bilden ska lagras på servern
-    if (req.file) {
-        await sharp(req.file.buffer)
-            .resize(300, 300, { fit: "cover" })
-            .jpeg({ quality: 80 })
-            .toFile(`uploads/${outputFilename}`);
-    }
-
     try {
         // Hämtar in värden från frontend som angetts
         const { category, image, alt } = req.body;
@@ -99,6 +88,17 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
 
         if (!alt || alt.length > 50) {
             return res.status(400).json({ error: "Alt-text måste anges och får inte vara längre än 50 tecken!" });
+        }
+
+        // Unikt filnamn för varje bild som laddas upp, jpg-format
+        const outputFilename = `${Date.now()}.jpg`;
+
+        // Inställningar och vart bilden ska lagras på servern
+        if (req.file) {
+            await sharp(req.file.buffer)
+                .resize(300, 300, { fit: "cover" })
+                .jpeg({ quality: 80 })
+                .toFile(`uploads/${outputFilename}`);
         }
         // skapar ny bild
         const newImage = await categoryImage.create({
