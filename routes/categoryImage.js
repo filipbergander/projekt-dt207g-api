@@ -41,7 +41,7 @@ const fileFilter = (req, file, cb) => {
 };
 // Filuppladdning av bilder till minnet genom multer
 //const upload = multer({ fileFilter, storage: multer.memoryStorage() });
-const upload = multer({ fileFilter, storage, limits: { fileSize: 5 * 1024 * 1024 } }); // Filstorleken är max 5MB
+const upload = multer({ fileFilter, storage });
 
 // Hämta alla bilder
 router.get("/", async(req, res) => {
