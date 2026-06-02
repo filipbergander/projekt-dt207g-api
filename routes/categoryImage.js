@@ -18,6 +18,10 @@ const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
 // Importerar modellen för en kategori-bild
 const categoryImage = require("../models/categoryImage.js");
 
+// Optimerar sharp för att försöka undvika problem med minnet på servern när bilder laddas upp
+sharp.cache(false);
+sharp.concurrency(1);
+
 // Vart filerna av bilder ska lagras, på servern: https://multerguide.vercel.app/blogs/multer-storage-configuration/
 const storage = multer.memoryStorage();
 
