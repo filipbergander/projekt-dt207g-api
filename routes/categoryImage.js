@@ -19,7 +19,7 @@ const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
 const categoryImage = require("../models/categoryImage.js");
 
 // Vart filerna av bilder ska lagras, på servern: https://multerguide.vercel.app/blogs/multer-storage-configuration/
-/*const storage = multer.diskStorage({
+const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/");
     },
@@ -27,7 +27,7 @@ const categoryImage = require("../models/categoryImage.js");
         cb(null, Date.now() + "-" +
             file.originalname);
     },
-});*/
+});
 
 // Skydd mot filtyper som inte ska kunna laddas upp i frontend
 const allowedFileTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -38,8 +38,8 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
 };
 // Filuppladdning av bilder till minnet genom multer
-const upload = multer({ fileFilter, storage: multer.memoryStorage() });
-//const upload = multer({ fileFilter, storage });
+//const upload = multer({ fileFilter, storage: multer.memoryStorage() });
+const upload = multer({ fileFilter, storage });
 
 // Hämta alla bilder
 router.get("/", async(req, res) => {
@@ -73,17 +73,20 @@ router.get("/:id", authenticateToken, async(req, res) => {
 // Lägga till en ny kategori-bild
 router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
     // Unikt filnamn för varje bild som laddas upp, jpg-format
-    const outputFilename = `${Date.now()}.jpg`;
-    console.log("Kategoribilden: ", req.file);
+
     // Inställningar och vart bilden ska lagras på servern
-    if (req.file) {
+    /*if (req.file) {
+
+    }*/
+
+    try {
+        const outputFilename = `${Date.now()}.jpg`;
+        console.log("Kategoribilden: ", req.file);
         await sharp(req.file.buffer)
             .resize(300, 300, { fit: "cover" })
             .jpeg({ quality: 80 })
             .toFile(`uploads/${outputFilename}`);
-    }
 
-    try {
         // Hämtar in värden från frontend som angetts
         const { category, image, alt } = req.body;
 
