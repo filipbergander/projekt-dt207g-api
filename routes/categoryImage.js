@@ -13,11 +13,12 @@ require('dotenv').config();
 // Tar med middleware för att se över användarens behörighet med JWT
 const authenticateToken = require("../middleware/authToken.js");
 
-//const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
-const urlBackend = "http://localhost:3000";
+const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
 
+// Importerar configen och streamifier för att kunna ladda upp bilder till cloudinary
 const cloudinary = require('../cloudinary.js');
 const streamifier = require('streamifier');
+
 // Importerar modellen för en kategori-bild
 const categoryImage = require("../models/categoryImage.js");
 
