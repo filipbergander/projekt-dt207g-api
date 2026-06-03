@@ -135,7 +135,6 @@ router.post("/login", async(req, res) => {
         });
         console.error(error);
     }
-    console.log("Inloggning kallad...");
 });
 
 // Exporterar router för att använda i server.js

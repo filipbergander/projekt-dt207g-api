@@ -5,7 +5,6 @@ const mongoose = require('mongoose'); // Mongoose-paketet
 const cors = require('cors'); // Möjliggör anslutning från annan domän
 const port = process.env.PORT || 3000; // Portanslutning
 const path = require('path');
-
 // För att kunna använda miljövariabler
 require('dotenv').config();
 
@@ -48,6 +47,5 @@ app.get('/', async(req, res) => {
 
 // Startar servern
 app.listen(port, () => {
-    // console.log("Servern startade på port: ", port);
     console.log("Servern startade på http://localhost:" + port);
 });

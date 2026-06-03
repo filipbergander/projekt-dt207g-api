@@ -7,14 +7,17 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const sharp = require('sharp');
+// För att kunna använda miljövariabler
+require('dotenv').config();
 
 // Tar med middleware för att se över användarens behörighet med JWT
 const authenticateToken = require("../middleware/authToken.js");
 
-// För att kunna använda miljövariabler
-require('dotenv').config();
-const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
+//const urlBackend = process.env.URL_BACKEND || "http://localhost:3000";
+const urlBackend = "http://localhost:3000";
 
+const cloudinary = require('../cloudinary.js');
+const streamifier = require('streamifier');
 // Importerar modellen för en kategori-bild
 const categoryImage = require("../models/categoryImage.js");
 
@@ -24,16 +27,6 @@ sharp.concurrency(1);
 
 // Vart filerna av bilder ska lagras, på servern: https://multerguide.vercel.app/blogs/multer-storage-configuration/
 const storage = multer.memoryStorage();
-
-/*({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" +
-            file.originalname);
-    },
-});*/
 
 // Skydd mot filtyper som inte ska kunna laddas upp i frontend
 const allowedFileTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -80,14 +73,15 @@ router.get("/:id", authenticateToken, async(req, res) => {
 router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
     try {
         // Hämtar in värden från frontend som angetts
-        const { category, image, alt } = req.body;
+        const { category, alt } = req.body;
 
         // Validera fälten
-        const categories = ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"];
+        const categories = ["Förrätt", "Huvudrätt", "Efterrätt", "Dryck"]; // Tillåtna kategorier
         if (!categories.includes(category)) {
             return res.status(400).json({ error: "Ogiltig kategori. Kategorin måste vara förrätt, huvudrätt, efterrätt eller dryck" });
         }
 
+        // Om ingen bildfil skickades med
         if (!req.file) {
             return res.status(400).json({ error: "Ingen bild försökte läggas till..." });
         }
@@ -95,49 +89,39 @@ router.post("/", authenticateToken, upload.single("image"), async(req, res) => {
         if (!alt || alt.length > 50) {
             return res.status(400).json({ error: "Alt-text måste anges och får inte vara längre än 50 tecken!" });
         }
+        // Laddar upp bilden till cloudinary med inställningar
+        const result = await cloudinary.uploader.upload_stream({
+                folder: "category-images", // Mapp i cloudinary
+                transformation: [ // Inställningar
+                    { width: 300, height: 300, crop: "fill" },
+                    { quality: "auto" }
+                ]
+            },
+            // Om uppladdningen lyckas eller misslyckas
+            async(error, uploadResult) => {
+                // Felhantering från cloudinary
+                if (error) {
+                    console.error("Fel vid Cloudinary: ", error);
+                    return res.status(500).json({ error: "Fel när bilden skulle laddas upp till Cloudinary..." });
+                }
 
-        // Unikt filnamn för varje bild som laddas upp, jpg-format
-        const outputFilename = `${Date.now()}.jpg`;
-
-
-        const uploadPath = path.join(__dirname, "../uploads", outputFilename);
-
-
-        // Inställningar och vart bilden ska lagras på servern
-        console.log("Kategoribilden: ", req.file);
-        await sharp(req.file.buffer)
-            .resize(300, 300, { fit: "cover" })
-            .jpeg({ quality: 80 })
-            .toFile(uploadPath);
-
-
-        // skapar ny bild
-        const newImage = await categoryImage.create({
-            category,
-            alt,
-            image: req.file ? `${urlBackend}uploads/${outputFilename}` : null
-        });
-
-        // Success-meddelande
-        res.status(201).json({
-            message: "Ny kategori-bild har lagts till!",
-            info: newImage
-        });
-
-    } catch (error) {
-        // Om man försöker lägga till en bild som redan finns
-        if (error.code === 11000) {
-            // Finns bilden redan?
-            if (error.keyPattern.category) {
-                return res.status(400).json({ error: "Kategorin har redan en bild" })
+                // Skapar ny post vid lyckad uppladdning av bild, sparar i databasen
+                const newImage = await categoryImage.create({
+                    category,
+                    alt,
+                    image: uploadResult.secure_url
+                });
+                // Lyckat svar
+                res.status(201).json({
+                    message: "Ny bild har lagts till!",
+                    info: newImage
+                });
             }
-        }
-        // Om man försöker ange fel kategori eller stavar fel...
-        if (error.name === "ValidationError") {
-            return res.status(400).json({ error: "Något gick fel: " + error.message });
-        }
-        // Slutlig felmeddelande
-        console.error("Fel vid uppladdning: ", error.message, error.stack);
+        );
+        // Laddar upp bilden
+        require("streamifier").createReadStream(req.file.buffer).pipe(result);
+    } catch (error) {
+        console.error("Fel vid uppladdning av bild: ", error);
         res.status(500).json({ error: "Fel på server när bilden skulle laddas upp..." });
     }
 });

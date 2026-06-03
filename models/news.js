@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 
 // Schema för ett nyhetsinlägg på hemsidan
 const newsSchema = new mongoose.Schema({
+    // Rubrik
     headline: {
         type: String,
         required: true,
@@ -11,6 +12,7 @@ const newsSchema = new mongoose.Schema({
         minlength: 5,
         maxlength: 70
     },
+    // Innehåll
     content: {
         type: String,
         required: true,
@@ -19,12 +21,14 @@ const newsSchema = new mongoose.Schema({
         minLength: 10,
         maxLength: 175
     },
+    // Skribent
     author: {
         type: String,
         required: true,
         minlength: 3,
         maxlength: 30
     },
+    // Timestamp
     createdAt: {
         type: Date,
         default: Date.now

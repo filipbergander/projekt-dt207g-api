@@ -111,7 +111,7 @@ router.post("/", authenticateToken, async(req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ error: "Kunde inte skapa nyhetsinlägget!" });
     }
 });
