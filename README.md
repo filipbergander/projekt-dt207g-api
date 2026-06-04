@@ -2,19 +2,19 @@
 
 ## Webbtjänst för fiktiv restaurang
 
-Uppgiften består av tre delar, en webbtjänst, en admin-sida och publik webbplats. I detta repo skapade jag webbtjänsten för Trattorian Lema som övriga webbplatser använder och hämtar information från.
+Uppgiften består av tre delar, en webbtjänst, en admin-sida och publik webbplats. I detta repo skapade jag webbtjänsten för Trattorian Lema, som övriga webbplatser använder och hämtar information från.
 Webbtjänsten skapades med databasservern **MongoDB Atlas**, paketen **Mongoose** och **Express**, samt NodeJS och JavaScript. Scheman och routes skapades för att definiera databasens struktur.
 Autentisering för skyddade routes och sessionshantering gjordes från middleware genom **JSON Web Tokens**(JWT) och vid inloggning hashas lösenorden genom paketet **Bcrypt**.
 
 Funktionalitet för CRUD är implementerat genom CREATE, READ, DELETE och PUT. Felmeddelanden genereras från servern när användaren försöker anropa en endpoint utan behörighet eller när något gått fel.
-Till databasen och restaurangen finns CRUD med för att skapa användare, logga in, boka bord samt hantera maträtter genom kategorier och bilder. Genom detta valde jag att skapa mer funktionalitet än grundkravet, vilket var att presentera en matsedel eller meny.
+Till databasen och restaurangen finns CRUD med för att skapa användare, logga in, boka bord samt hantera maträtter genom kategorier och bilder. Genom detta valde jag att skapa mer funktionalitet än grundkravet, som till en början var att presentera en matsedel eller meny.
 
 ### Länk
 En liveversion av API:et finns tillgänglig på: https://fb-backend-api-p9fp.onrender.com/  
 För hemsidan användes Render vilket även innebär att servern vanligtvis ligger i viloläge, och det kan ta lite tid för att den ska vakna till liv vid ett första anrop.
 
 ## Installation av databas
-En dotenv-fil används för anslutningsmöjligheter och finns som exempel inom filen, *.env.sample*. Klona ner källkodsfilerna, kör kommando npm install för att installera nödvändiga npm-pkaet. Alla paket som använts i laborationen hittas i *package.json* under dependencies.
+Projektet använder MongoDB Atlas. För att ansluta behöver du skapa ett konto på MongoDB Atlas, cluster samt databas-användare och även tillåta din IP-adress. Du kan sedan kopiera en "connection string" och klistra in den i projektets .env-fil. Dotenv används för anslutningsmöjligheter och finns som exempel i filen, *.env.sample*. Klona ner källkodsfilerna, kör kommando npm install för att installera nödvändiga npm-paket. Alla paket som använts i laborationen hittas i *package.json* under dependencies. Servern startas genom kommandot: *npm run serve*.
 
 ### Scheman
 **Användare:**
