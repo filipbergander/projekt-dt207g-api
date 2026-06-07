@@ -69,7 +69,6 @@ router.post("/register", authenticateToken, async(req, res) => {
 router.post("/login", async(req, res) => {
     try {
         const { email, password } = req.body;
-
         // Validera input
         if (!email || !password) {
             return res.status(400).json({

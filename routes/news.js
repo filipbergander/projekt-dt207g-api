@@ -197,4 +197,5 @@ router.put("/:id", authenticateToken, async(req, res) => {
     }
 });
 
+// Exporterar router för att använda i server.js
 module.exports = router;

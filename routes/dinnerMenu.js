@@ -106,7 +106,7 @@ router.post("/", authenticateToken, async(req, res) => {
     }
 });
 
-// Radera en maträtt från middagsmenyn
+// Radera en maträtt från kvällsmenyn genom Id
 router.delete("/:id", authenticateToken, async(req, res) => {
     try {
         // Hittar maträtt genom id och raderar från databasen
@@ -120,7 +120,9 @@ router.delete("/:id", authenticateToken, async(req, res) => {
             message: "Maträtten i middagsmenyn raderades från databasen",
             deleted: deleteDish
         });
-    } catch (error) {
+    }
+    // Om något går fel hamnar man här
+    catch (error) {
         return res.status(400).json({
             error: "Fel format på angivet ID eller ogiltigt värde",
             details: error.message
